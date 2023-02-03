@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{b21c43c3-9b63-4a1a-b76e-972e067f8f3a}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+    ch1 : Channel(10,1);
+    ch2 : Channel(10,2);
+    ch3 : Channel(10,4);
+    ch4 : Channel(11,1);
+    ch5 : Channel(11,2);
+    ch6 : Channel(11,3);
+    ch7 : I_Voltage;
+    chKey : DWORD;
+    channels : Dictionary_I_Voltage;
+    addCh : BOOL;
+    getCh : BOOL;
+    getChAt : BOOL;
+    removeCh : BOOL;
+    clear : BOOL;
+    result : BOOL;
+    index : INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF addCh THEN
+    addCh := FALSE;
+    result := channels.TryAdd(ch1);
+    result := channels.TryAdd(ch2);
+    result := channels.TryAdd(ch3);
+    result := channels.TryAdd(ch4);
+    result := channels.TryAdd(ch5);
+END_IF
+
+IF getCh THEN
+    getCh := FALSE;
+    result := channels.TryGet(10,4,item=>ch7);
+END_IF
+
+IF getChAt THEN
+    getChAt := FALSE;
+    result := channels.TryGetAt(index,key=>chKey,item=>ch7);
+END_IF
+
+IF removeCh THEN
+    removeCh := FALSE;
+    channels.Remove(10,4);
+END_IF
+
+IF clear THEN
+    clear := FALSE;
+    channels.Clear();
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

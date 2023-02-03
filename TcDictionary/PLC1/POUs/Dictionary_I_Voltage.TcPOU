@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Dictionary_I_Voltage" Id="{8e91cf86-c231-4e52-9605-12994101b650}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Dictionary_I_Voltage
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+    _dataPool : ARRAY[0..GVL.DICTIONARY_UPPER_BOUND] OF I_Voltage;
+    _hashTableEntries : ARRAY[0..GVL.DICTIONARY_UPPER_BOUND] OF Tc2_Utilities.T_HashTableEntry;
+    _hashTable : Tc2_Utilities.FB_HashTableCtrl;
+    _hashTableHandler : Tc2_Utilities.T_HHASHTABLE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Clear" Id="{db690d9b-229f-4895-b557-65b0d6c1d3de}">
+      <Declaration><![CDATA[METHOD Clear
+VAR
+    i : INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_CreateHashTableHnd(ADR(_hashTableEntries), SIZEOF(_hashTableEntries), _hashTableHandler ); //Intialize table handle
+_hashTable.A_Reset(hTable:=_hashTableHandler);
+FOR i:=0 TO GVL.DICTIONARY_UPPER_BOUND DO
+    _dataPool[i] := 0;
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{72e959d1-60ef-4a06-97b0-a68554ff45ba}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_CreateHashTableHnd(ADR(_hashTableEntries), SIZEOF(_hashTableEntries), _hashTableHandler ); //Intialize table handle]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetCount" Id="{1b7e29ae-aa6e-4513-94c3-019645e98fa5}">
+      <Declaration><![CDATA[METHOD GetCount : INT
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetCount := UDINT_TO_INT(_hashTableHandler.nCount);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Remove" Id="{35bd3704-bd6f-4eef-96e9-53e061a068eb}">
+      <Declaration><![CDATA[METHOD Remove
+VAR_INPUT
+    terminalAddress : WORD;
+    channelNumber : WORD;
+END_VAR
+VAR
+    itemGuid : ChannelGuid;
+    entryValuePtr : POINTER TO I_Voltage;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[itemGuid.GuidCombo.TerminalAddress := terminalAddress;
+itemGuid.GuidCombo.ChannelNumber := channelNumber;
+_hashTable.A_Remove(key:=itemGuid.GuidValue, hTable:=_hashTableHandler, getValue=>entryValuePtr);
+IF _hashTable.bOk THEN
+	entryValuePtr^ := 0;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TryAdd" Id="{7240ec35-bcf1-4957-99e9-e152138a9cf2}">
+      <Declaration><![CDATA[METHOD TryAdd : BOOL
+VAR_INPUT
+    item : I_Voltage;
+END_VAR
+VAR
+    newEntryPtr	: POINTER TO T_HashTableEntry;
+	indexOfnewEntry	: ULINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_hashTable.A_Add(hTable:=_hashTableHandler, key:=item.GUID, putValue:=16#FFFFFFFF, getPosPtr=>newEntryPtr); //Just to get a proper Index, later we assign the real value
+IF _hashTable.bOk THEN
+	_hashTable.A_GetIndexAtPosPtr(hTable:=_hashTableHandler, putPosPtr:=newEntryPtr, getValue=>indexOfnewEntry);
+	IF _hashTable.bOk THEN
+		_dataPool[indexOfnewEntry] := item;
+		_hashTable.A_Add(hTable:=_hashTableHandler, key:=item.GUID,putValue:=ADR(_dataPool[indexOfnewEntry]));
+		IF _hashTable.bOk THEN
+			TryAdd := TRUE;
+		END_IF
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TryGet" Id="{07980335-f0d4-43d7-a64c-4eedcc6180ba}">
+      <Declaration><![CDATA[METHOD TryGet : BOOL
+VAR_INPUT
+    terminalAddress : WORD;
+    channelNumber : WORD;
+END_VAR
+VAR_OUTPUT
+    item : I_Voltage;
+END_VAR
+VAR
+    itemGuid : ChannelGuid;
+    entryValuePtr : POINTER TO I_Voltage;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[itemGuid.GuidCombo.TerminalAddress := terminalAddress;
+itemGuid.GuidCombo.ChannelNumber := channelNumber;
+_hashTable.A_Lookup(key:=itemGuid.GuidValue, hTable:=_hashTableHandler, getValue=>entryValuePtr);
+IF _hashTable.bOk THEN
+	item := entryValuePtr^;
+    IF item<>0 THEN
+        TryGet := TRUE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TryGetAt" Id="{458f240f-3a47-43f4-8237-27d29ea7fec6}">
+      <Declaration><![CDATA[METHOD TryGetAt : BOOL
+VAR_INPUT
+    index : INT;
+END_VAR
+VAR_OUTPUT
+    key : DWORD;
+    item : I_Voltage;
+END_VAR
+VAR
+    entryPtr : POINTER TO T_HashTableEntry;
+    entryValuePtr : POINTER TO I_Voltage;
+    i : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF index<0 OR index>=GetCount() THEN
+    TryGetAt := FALSE;
+    RETURN;
+END_IF
+index := GetCount()-(index+1);
+
+_hashTable.A_GetFirst(hTable:=_hashTableHandler, putPosPtr:=0, getValue=>entryValuePtr, getPosPtr=>entryPtr);
+IF _hashTable.bOk THEN
+    FOR i:=1 TO index DO
+        _hashTable.A_GetNext(hTable:=_hashTableHandler, putPosPtr:=entryPtr, getValue=>entryValuePtr, getPosPtr=>entryPtr);
+	END_FOR
+    IF _hashTable.bOk THEN
+        item := entryValuePtr^;
+        key := entryPtr^.key;
+        IF item<>0 THEN
+            TryGetAt := TRUE;
+        END_IF
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

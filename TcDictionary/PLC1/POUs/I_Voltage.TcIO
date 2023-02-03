@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_Voltage" Id="{74a58a12-a1d9-4302-a5cb-4fdb8058c150}">
+    <Declaration><![CDATA[INTERFACE I_Voltage
+]]></Declaration>
+    <Property Name="GUID" Id="{bfcb7caf-012f-406c-b272-6cec8c852034}">
+      <Declaration><![CDATA[PROPERTY GUID : DWORD]]></Declaration>
+      <Get Name="Get" Id="{56011a35-e7a2-4261-a6ae-1f77b348701f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="Name" Id="{004b3c11-f25d-4ac5-a32c-78598e9dce61}">
+      <Declaration><![CDATA[PROPERTY Name : STRING]]></Declaration>
+      <Get Name="Get" Id="{822dfdc5-dcf9-4e7f-8376-886a26ed46ee}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{98739eca-34ae-41a6-8308-6792b34b18a5}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

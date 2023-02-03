@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Channel" Id="{9f22b7fd-ffaa-470a-b4df-d8cbda897ecd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Channel IMPLEMENTS I_Voltage
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+    _terminalAddress : WORD;
+    _channelNumber : WORD;
+    _guid : ChannelGuid;
+    _name : STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{582ecc2d-ba1b-4ba3-abf2-cdff45a9545b}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+    termianlAddress : WORD;
+    channelNumber : WORD;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_terminalAddress := termianlAddress;
+_channelNumber := channelNumber;
+_guid.GuidCombo.ChannelNumber := _channelNumber;
+_guid.GuidCombo.TerminalAddress := _terminalAddress;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="GUID" Id="{8fabec7f-c715-480e-a637-568fd5b5e6a0}">
+      <Declaration><![CDATA[PROPERTY GUID : DWORD
+]]></Declaration>
+      <Get Name="Get" Id="{7ddd41b5-6166-4fb6-8517-66e11cc7dfce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[GUID := _guid.GuidValue;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Name" Id="{10914994-d070-4496-9266-05eef404ab11}">
+      <Declaration><![CDATA[PROPERTY Name : STRING]]></Declaration>
+      <Get Name="Get" Id="{96afc15d-73a9-4e78-8bbc-bc8bbc64d125}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Name := _name;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{2e2289d7-a57b-4042-bea8-6bfd478489cd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_name := Name;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+  </POU>
+</TcPlcObject>
